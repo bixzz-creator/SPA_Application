@@ -61,10 +61,8 @@ export function createApp(): Application {
     console.error('Unhandled error:', err);
     res.status(500).json({
       success: false,
-      message:
-        config.nodeEnv === 'development'
-          ? err.message
-          : 'Internal server error',
+      message: err.message || 'Internal server error',
+      error: config.nodeEnv === 'development' ? err.stack : undefined,
     });
   });
 
