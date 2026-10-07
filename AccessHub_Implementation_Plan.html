@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>AccessHub - Implementation Plan & Architecture Blueprint</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap');
+
+    @page {
+      size: A4;
+      margin: 18mm 16mm 18mm 16mm;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      color: #1e293b;
+      background: #ffffff;
+      line-height: 1.55;
+      font-size: 10pt;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+
+    /* Cover / Header Section */
+    .header-card {
+      background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4338ca 100%);
+      color: #ffffff;
+      padding: 28px 32px;
+      border-radius: 12px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 12px rgba(30, 27, 75, 0.15);
+    }
+
+    .badge-pill {
+      display: inline-block;
+      background: rgba(255, 255, 255, 0.18);
+      color: #e0e7ff;
+      font-size: 7.5pt;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 3px 10px;
+      border-radius: 20px;
+      margin-bottom: 12px;
+    }
+
+    .title {
+      font-size: 20pt;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      line-height: 1.2;
+      margin-bottom: 6px;
+    }
+
+    .subtitle {
+      font-size: 10.5pt;
+      color: #c7d2fe;
+      font-weight: 400;
+    }
+
+    .meta-row {
+      display: flex;
+      gap: 20px;
+      margin-top: 18px;
+      padding-top: 14px;
+      border-top: 1px solid rgba(255, 255, 255, 0.15);
+      font-size: 8.5pt;
+      color: #e0e7ff;
+    }
+
+    .meta-item strong {
+      color: #ffffff;
+    }
+
+    /* Section Headers */
+    .section {
+      margin-bottom: 22px;
+      page-break-inside: avoid;
+    }
+
+    .section-title {
+      font-size: 13pt;
+      font-weight: 700;
+      color: #0f172a;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding-bottom: 6px;
+      border-bottom: 2px solid #e2e8f0;
+      margin-bottom: 12px;
+    }
+
+    .section-title .icon {
+      color: #4f46e5;
+    }
+
+    /* Grid & Cards */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-bottom: 12px;
+    }
+
+    .card {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 12px 14px;
+    }
+
+    .card-title {
+      font-size: 9.5pt;
+      font-weight: 700;
+      color: #1e1b4b;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .card p, .card li {
+      font-size: 8.5pt;
+      color: #475569;
+    }
+
+    .card ul {
+      list-style-type: none;
+      padding-left: 0;
+    }
+
+    .card li {
+      margin-bottom: 4px;
+      position: relative;
+      padding-left: 14px;
+    }
+
+    .card li::before {
+      content: "•";
+      color: #6366f1;
+      font-weight: bold;
+      position: absolute;
+      left: 0;
+    }
+
+    /* Tables */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 8.5pt;
+      margin-top: 8px;
+      margin-bottom: 12px;
+      background: #ffffff;
+      border-radius: 6px;
+      overflow: hidden;
+      border: 1px solid #e2e8f0;
+    }
+
+    th {
+      background: #f1f5f9;
+      color: #475569;
+      font-weight: 700;
+      text-align: left;
+      padding: 8px 10px;
+      border-bottom: 1px solid #cbd5e1;
+      text-transform: uppercase;
+      font-size: 7.5pt;
+      letter-spacing: 0.04em;
+    }
+
+    td {
+      padding: 7px 10px;
+      border-bottom: 1px solid #f1f5f9;
+      color: #334155;
+      vertical-align: top;
+    }
+
+    tr:nth-child(even) td {
+      background: #f8fafc;
+    }
+
+    /* Badges */
+    .status-pill {
+      display: inline-block;
+      padding: 2px 7px;
+      border-radius: 12px;
+      font-size: 7.5pt;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .status-yes { background: #dcfce7; color: #15803d; }
+    .status-no { background: #fee2e2; color: #b91c1c; }
+    .status-info { background: #e0e7ff; color: #4338ca; }
+
+    .code-pill {
+      font-family: 'JetBrains Mono', monospace;
+      background: #f1f5f9;
+      color: #0f172a;
+      padding: 1px 5px;
+      border-radius: 4px;
+      font-size: 8pt;
+    }
+
+    /* Callout */
+    .callout {
+      background: #eef2ff;
+      border-left: 4px solid #6366f1;
+      padding: 10px 14px;
+      border-radius: 0 6px 6px 0;
+      font-size: 8.5pt;
+      color: #312e81;
+      margin: 10px 0;
+    }
+
+    /* Footer */
+    .doc-footer {
+      margin-top: 24px;
+      padding-top: 12px;
+      border-top: 1px solid #e2e8f0;
+      display: flex;
+      justify-content: space-between;
+      font-size: 7.5pt;
+      color: #94a3b8;
+    }
+
+    .page-break {
+      page-break-after: always;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Cover Header -->
+  <div class="header-card">
+    <div class="badge-pill">Production Architecture Blueprint</div>
+    <h1 class="title">AccessHub Platform Implementation Plan</h1>
+    <p class="subtitle">Complete Technical Specification for Angular SPA & Node.js Role-Based Access Portal</p>
+    <div class="meta-row">
+      <div class="meta-item"><strong>Frameworks:</strong> Angular 16+ & Express.js</div>
+      <div class="meta-item"><strong>Database:</strong> MongoDB (Local)</div>
+      <div class="meta-item"><strong>Security:</strong> JWT & RBAC Middleware</div>
+      <div class="meta-item"><strong>Date:</strong> October 2026</div>
+    </div>
+  </div>
+
+  <!-- Executive Summary -->
+  <div class="section">
+    <h2 class="section-title"><span class="icon">■</span> Executive Summary</h2>
+    <p style="font-size: 9pt; color: #334155; margin-bottom: 10px;">
+      AccessHub is a production-style single page application designed for enterprise applicant verification records management. It enforces strict Role-Based Access Control (RBAC) across client views, routing, and backend REST APIs. The architecture implements modular Angular components, reactive forms, RxJS observables, artificial latency simulation, and automated test coverage.
+    </p>
+  </div>
+
+  <!-- Phase 1: Technology Stack -->
+  <div class="section">
+    <h2 class="section-title"><span class="icon">01.</span> Technology Stack & Infrastructure</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Layer</th>
+          <th>Technology</th>
+          <th>Purpose & Key Features</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Frontend SPA</strong></td>
+          <td>Angular 16, TypeScript, SCSS</td>
+          <td>Modular lazy-loaded architecture, Reactive Forms, Route Guards, HTTP Interceptors.</td>
+        </tr>
+        <tr>
+          <td><strong>Reactive Layer</strong></td>
+          <td>RxJS 7+</td>
+          <td>BehaviorSubjects for auth state, forkJoin for parallel API aggregation, debounceTime for search.</td>
+        </tr>
+        <tr>
+          <td><strong>Backend API</strong></td>
+          <td>Node.js, Express.js (TypeScript)</td>
+          <td>RESTful API layer, route-level JWT & RBAC middleware, async latency simulator.</td>
+        </tr>
+        <tr>
+          <td><strong>Database</strong></td>
+          <td>MongoDB (Mongoose ODM)</td>
+          <td>Local persistent database (`mongodb://localhost:27017/accesshub`), schema validation, bcrypt salting.</td>
+        </tr>
+        <tr>
+          <td><strong>API Specs</strong></td>
+          <td>Swagger / OpenAPI 3.0</td>
+          <td>Interactive API testing & schema definition at `/api-docs`.</td>
+        </tr>
+        <tr>
+          <td><strong>Testing</strong></td>
+          <td>Jest & Supertest</td>
+          <td>14 automated integration tests covering authentication, RBAC authorization, and API routes.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Phase 2: Backend Architecture -->
+  <div class="section">
+    <h2 class="section-title"><span class="icon">02.</span> Backend Architecture & REST API Design</h2>
+    <div class="grid-2">
+      <div class="card">
+        <h3 class="card-title">Database Models (MongoDB)</h3>
+        <ul>
+          <li><strong>User Model:</strong> Stores `userId`, `name`, `email`, `password` (hashed with salt), `role` (`ADMIN` | `GENERAL_USER`), `status` (`ACTIVE` | `INACTIVE`).</li>
+          <li><strong>Record Model:</strong> Stores `recordId`, `title`, `category`, `status`, `owner`, `priority`, and `description`.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3 class="card-title">Security & Middleware</h3>
+        <ul>
+          <li><strong>JWT Auth:</strong> Validates `Bearer` tokens on all private endpoints.</li>
+          <li><strong>requireAdmin:</strong> Restricts user directory & global management to administrators.</li>
+          <li><strong>Delay Simulator:</strong> Handles query parameter `?delay=ms` to simulate latency.</li>
+        </ul>
+      </div>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Method</th>
+          <th>Endpoint</th>
+          <th>Access</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="code-pill">POST</span></td>
+          <td><span class="code-pill">/api/auth/login</span></td>
+          <td>Public</td>
+          <td>Validates user ID, password, and active status; issues JWT token.</td>
+        </tr>
+        <tr>
+          <td><span class="code-pill">GET</span></td>
+          <td><span class="code-pill">/api/records</span></td>
+          <td>Authenticated</td>
+          <td>Returns records filtered by ownership for General Users, or all for Admin.</td>
+        </tr>
+        <tr>
+          <td><span class="code-pill">POST</span></td>
+          <td><span class="code-pill">/api/records</span></td>
+          <td>Authenticated</td>
+          <td>Creates a new verification record tagged with current user ownership.</td>
+        </tr>
+        <tr>
+          <td><span class="code-pill">PUT / DELETE</span></td>
+          <td><span class="code-pill">/api/records/:id</span></td>
+          <td>Owner / Admin</td>
+          <td>Modifies or removes a record (RBAC checked).</td>
+        </tr>
+        <tr>
+          <td><span class="code-pill">GET</span></td>
+          <td><span class="code-pill">/api/users</span></td>
+          <td>Admin Only</td>
+          <td>Retrieves full user management directory with status and roles.</td>
+        </tr>
+        <tr>
+          <td><span class="code-pill">PATCH</span></td>
+          <td><span class="code-pill">/api/users/:id/status</span></td>
+          <td>Admin Only</td>
+          <td>Toggles account status between ACTIVE and INACTIVE.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="page-break"></div>
+
+  <!-- Phase 3: Frontend Architecture -->
+  <div class="section">
+    <h2 class="section-title"><span class="icon">03.</span> Frontend Architecture & Angular Modules</h2>
+    <div class="grid-2">
+      <div class="card">
+        <h3 class="card-title">Core & Shared Modules</h3>
+        <ul>
+          <li><strong>AppRoutingModule:</strong> Shell wrapper using `LayoutComponent` for authenticated routes.</li>
+          <li><strong>AuthGuard:</strong> Redirects unauthenticated visits to `/login`.</li>
+          <li><strong>RoleGuard:</strong> Enforces `data: { role: 'ADMIN' }` protection.</li>
+          <li><strong>AuthInterceptor:</strong> Injects `Authorization: Bearer <token>`.</li>
+          <li><strong>Shared Components:</strong> Reusable Spinner, Badges, and Dialogs.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3 class="card-title">Feature Modules (Lazy Loaded)</h3>
+        <ul>
+          <li><strong>AuthModule:</strong> Two-panel login UI with credential quick-fill.</li>
+          <li><strong>DashboardModule:</strong> Key stat cards and recent records via `forkJoin`.</li>
+          <li><strong>RecordsModule:</strong> Table with debounce search, filters, and latency toggle.</li>
+          <li><strong>AdminModule:</strong> User directory with modal creation and status toggles.</li>
+          <li><strong>ProfileModule:</strong> Profile updates, password changes, and RBAC matrix.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="callout">
+      <strong>⚡ Async Delay Simulation Feature:</strong>
+      Both the Records and User Management views feature an interactive latency selector bar (0ms, 1000ms, 2000ms, 3000ms). When toggled, the frontend requests data with an artificial server delay, triggering clean loading spinner states and demonstrating async handling.
+    </div>
+  </div>
+
+  <!-- Phase 4: RBAC Security Matrix -->
+  <div class="section">
+    <h2 class="section-title"><span class="icon">04.</span> Role-Based Access Control (RBAC) Matrix</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Application Capability</th>
+          <th>Administrator (ADMIN)</th>
+          <th>General User (GENERAL_USER)</th>
+          <th>Enforcement Layer</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Platform Dashboard</strong></td>
+          <td><span class="status-pill status-yes">Full Platform Metrics</span></td>
+          <td><span class="status-pill status-info">Personal Stats Only</span></td>
+          <td>Backend aggregation & UI view filtering</td>
+        </tr>
+        <tr>
+          <td><strong>Verification Records</strong></td>
+          <td><span class="status-pill status-yes">All Records (Cross-User)</span></td>
+          <td><span class="status-pill status-info">Own Records Only</span></td>
+          <td>Backend `owner` query filter</td>
+        </tr>
+        <tr>
+          <td><strong>Create Records</strong></td>
+          <td><span class="status-pill status-yes">Allowed</span></td>
+          <td><span class="status-pill status-yes">Allowed</span></td>
+          <td>Reactive Form validation</td>
+        </tr>
+        <tr>
+          <td><strong>Edit / Delete Records</strong></td>
+          <td><span class="status-pill status-yes">Any Record</span></td>
+          <td><span class="status-pill status-info">Own Records Only</span></td>
+          <td>Backend RBAC ownership check</td>
+        </tr>
+        <tr>
+          <td><strong>User Directory (`/admin/users`)</strong></td>
+          <td><span class="status-pill status-yes">Full Access</span></td>
+          <td><span class="status-pill status-no">Forbidden (Blocked)</span></td>
+          <td>Angular `RoleGuard` & Express `requireAdmin`</td>
+        </tr>
+        <tr>
+          <td><strong>Toggle Account Status</strong></td>
+          <td><span class="status-pill status-yes">Allowed</span></td>
+          <td><span class="status-pill status-no">Forbidden</span></td>
+          <td>Express `requireAdmin` middleware</td>
+        </tr>
+        <tr>
+          <td><strong>Edit Profile & Password</strong></td>
+          <td><span class="status-pill status-yes">Self Only</span></td>
+          <td><span class="status-pill status-yes">Self Only</span></td>
+          <td>JWT user claims</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Phase 5: Verification & Testing Results -->
+  <div class="section">
+    <h2 class="section-title"><span class="icon">05.</span> Quality Assurance & Test Verification</h2>
+    <div class="grid-2">
+      <div class="card">
+        <h3 class="card-title">Integration Test Suite (14/14 Passed)</h3>
+        <ul>
+          <li>✓ Admin & User login validation</li>
+          <li>✓ Password hashing and verification</li>
+          <li>✓ Role matching & rejection on invalid roles</li>
+          <li>✓ 403 Forbidden on unauthorized user directory access</li>
+          <li>✓ 401 Unauthorized on missing JWT tokens</li>
+          <li>✓ Ownership-based record isolation</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3 class="card-title">Live Port Verification</h3>
+        <ul>
+          <li><strong>Frontend:</strong> `http://localhost:4200` (HTTP 200 OK)</li>
+          <li><strong>Backend:</strong> `http://localhost:5000` (HTTP 200 OK)</li>
+          <li><strong>Swagger UI:</strong> `http://localhost:5000/api-docs`</li>
+          <li><strong>Database:</strong> MongoDB on `27017`</li>
+          <li><strong>TypeScript:</strong> 0 errors (`tsc --noEmit` clean)</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pre-configured Credentials -->
+  <div class="section">
+    <h2 class="section-title"><span class="icon">06.</span> Pre-seeded Demo Credentials</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Role</th>
+          <th>User ID</th>
+          <th>Password</th>
+          <th>Account Status</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Administrator</strong></td>
+          <td><span class="code-pill">admin</span></td>
+          <td><span class="code-pill">admin123</span></td>
+          <td><span class="status-pill status-yes">ACTIVE</span></td>
+          <td>Superuser account with full access to records and user directory.</td>
+        </tr>
+        <tr>
+          <td><strong>General User</strong></td>
+          <td><span class="code-pill">user</span></td>
+          <td><span class="code-pill">user123</span></td>
+          <td><span class="status-pill status-yes">ACTIVE</span></td>
+          <td>Standard user account with 3 pre-seeded personal verification records.</td>
+        </tr>
+        <tr>
+          <td><strong>General User</strong></td>
+          <td><span class="code-pill">john</span></td>
+          <td><span class="code-pill">user123</span></td>
+          <td><span class="status-pill status-yes">ACTIVE</span></td>
+          <td>Employee account with HR & IT setup records.</td>
+        </tr>
+        <tr>
+          <td><strong>General User</strong></td>
+          <td><span class="code-pill">sarah</span></td>
+          <td><span class="code-pill">user123</span></td>
+          <td><span class="status-pill status-yes">ACTIVE</span></td>
+          <td>Compliance officer account with legal & finance records.</td>
+        </tr>
+        <tr>
+          <td><strong>Inactive User</strong></td>
+          <td><span class="code-pill">emily</span></td>
+          <td><span class="code-pill">user123</span></td>
+          <td><span class="status-pill status-no">INACTIVE</span></td>
+          <td>Demonstrates inactive account protection (login blocked with 403).</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Document Footer -->
+  <div class="doc-footer">
+    <span>AccessHub Architecture & Implementation Plan • Confidential</span>
+    <span>Generated: October 2026 • Single Page Application Standards</span>
+  </div>
+
+</body>
+</html>

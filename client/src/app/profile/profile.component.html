@@ -1,0 +1,202 @@
+<div class="profile-page">
+  <!-- Header Card -->
+  <div class="profile-hero-card">
+    <div class="hero-avatar">
+      {{ userProfile?.name?.charAt(0)?.toUpperCase() || 'U' }}
+    </div>
+    <div class="hero-info">
+      <h1 class="hero-name">{{ userProfile?.name || 'User Profile' }}</h1>
+      <p class="hero-email">{{ userProfile?.email }}</p>
+      <div class="hero-badges">
+        <span class="badge" [class.badge-admin]="userProfile?.role === 'ADMIN'" [class.badge-user]="userProfile?.role === 'GENERAL_USER'">
+          {{ userProfile?.role === 'ADMIN' ? '🛡️ Administrator' : '👤 General User' }}
+        </span>
+        <span class="badge badge-active">
+          ● {{ userProfile?.status || 'ACTIVE' }}
+        </span>
+        <span class="badge badge-id">ID: {{ userProfile?.userId }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Messages -->
+  <div *ngIf="successMessage" class="banner-success">
+    <span>✓ {{ successMessage }}</span>
+  </div>
+
+  <div *ngIf="errorMessage" class="banner-error">
+    <span>✕ {{ errorMessage }}</span>
+  </div>
+
+  <!-- Loading State -->
+  <app-loading-spinner *ngIf="isLoading" message="Loading profile information..."></app-loading-spinner>
+
+  <!-- Main Content Grid -->
+  <div class="profile-grid" *ngIf="!isLoading">
+    <!-- Left Column: Forms -->
+    <div class="forms-col">
+      <!-- Edit Profile Details -->
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">Personal Information</h2>
+          <p class="card-subtitle">Update your display name and registered email address.</p>
+        </div>
+
+        <form [formGroup]="profileForm" (ngSubmit)="saveProfile()" class="card-body">
+          <div class="form-group">
+            <label class="form-label">Full Name <span class="required">*</span></label>
+            <input
+              type="text"
+              formControlName="name"
+              class="form-control"
+              placeholder="e.g. Sarah Connor"
+              [class.is-invalid]="profileForm.get('name')?.touched && profileForm.get('name')?.invalid"
+            />
+            <div *ngIf="profileForm.get('name')?.touched && profileForm.get('name')?.errors?.['required']" class="form-error">
+              Full name is required.
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Email Address <span class="required">*</span></label>
+            <input
+              type="email"
+              formControlName="email"
+              class="form-control"
+              placeholder="e.g. sarah@accesshub.corp"
+              [class.is-invalid]="profileForm.get('email')?.touched && profileForm.get('email')?.invalid"
+            />
+            <div *ngIf="profileForm.get('email')?.touched && profileForm.get('email')?.errors?.['required']" class="form-error">
+              Email address is required.
+            </div>
+            <div *ngIf="profileForm.get('email')?.touched && profileForm.get('email')?.errors?.['email']" class="form-error">
+              Please enter a valid email address.
+            </div>
+          </div>
+
+          <div class="card-footer">
+            <button type="submit" class="btn btn-primary" [disabled]="profileForm.invalid || isSavingProfile">
+              <span *ngIf="isSavingProfile">Saving changes...</span>
+              <span *ngIf="!isSavingProfile">Save Changes</span>
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Change Password -->
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">Change Password</h2>
+          <p class="card-subtitle">Ensure your account uses a secure password with at least 6 characters.</p>
+        </div>
+
+        <form [formGroup]="passwordForm" (ngSubmit)="changePassword()" class="card-body">
+          <div class="form-group">
+            <label class="form-label">New Password <span class="required">*</span></label>
+            <input
+              type="password"
+              formControlName="password"
+              class="form-control"
+              placeholder="Enter new password"
+              [class.is-invalid]="passwordForm.get('password')?.touched && passwordForm.get('password')?.invalid"
+            />
+            <div *ngIf="passwordForm.get('password')?.touched && passwordForm.get('password')?.errors?.['required']" class="form-error">
+              Password is required.
+            </div>
+            <div *ngIf="passwordForm.get('password')?.touched && passwordForm.get('password')?.errors?.['minlength']" class="form-error">
+              Password must be at least 6 characters.
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Confirm New Password <span class="required">*</span></label>
+            <input
+              type="password"
+              formControlName="confirmPassword"
+              class="form-control"
+              placeholder="Re-enter new password"
+              [class.is-invalid]="passwordForm.get('confirmPassword')?.touched && passwordForm.get('confirmPassword')?.invalid"
+            />
+            <div *ngIf="passwordForm.get('confirmPassword')?.touched && passwordForm.get('confirmPassword')?.errors?.['required']" class="form-error">
+              Please confirm your new password.
+            </div>
+          </div>
+
+          <div class="card-footer">
+            <button type="submit" class="btn btn-primary" [disabled]="passwordForm.invalid || isSavingPassword">
+              <span *ngIf="isSavingPassword">Updating password...</span>
+              <span *ngIf="!isSavingPassword">Update Password</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Right Column: Account Specs & RBAC -->
+    <div class="info-col">
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">Account Details</h2>
+        </div>
+        <div class="card-body details-list">
+          <div class="detail-row">
+            <span class="detail-label">User Identifier</span>
+            <span class="detail-value font-mono">{{ userProfile?.userId }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Assigned Role</span>
+            <span class="detail-value font-semibold">{{ userProfile?.role === 'ADMIN' ? 'Administrator' : 'General User' }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Account Status</span>
+            <span class="detail-value text-success font-semibold">{{ userProfile?.status }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Member Since</span>
+            <span class="detail-value">{{ userProfile?.createdAt | date:'mediumDate' }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Last Updated</span>
+            <span class="detail-value">{{ userProfile?.updatedAt | date:'mediumDate' }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">Role Privileges & Permissions</h2>
+        </div>
+        <div class="card-body permissions-list">
+          <div class="perm-item">
+            <span class="perm-icon">✓</span>
+            <div>
+              <strong>View Dashboard</strong>
+              <p>View high-level overview metrics and statistics</p>
+            </div>
+          </div>
+          <div class="perm-item">
+            <span class="perm-icon">✓</span>
+            <div>
+              <strong>Manage Verification Records</strong>
+              <p>{{ userProfile?.role === 'ADMIN' ? 'Create, view, edit, and delete records across all users' : 'Create, view, and edit your personal verification records' }}</p>
+            </div>
+          </div>
+          <div class="perm-item" [class.perm-disabled]="userProfile?.role !== 'ADMIN'">
+            <span class="perm-icon">{{ userProfile?.role === 'ADMIN' ? '✓' : '✕' }}</span>
+            <div>
+              <strong>User Directory Management</strong>
+              <p>{{ userProfile?.role === 'ADMIN' ? 'Manage, activate/deactivate, and create system user accounts' : 'Restricted to Administrators' }}</p>
+            </div>
+          </div>
+          <div class="perm-item" [class.perm-disabled]="userProfile?.role !== 'ADMIN'">
+            <span class="perm-icon">{{ userProfile?.role === 'ADMIN' ? '✓' : '✕' }}</span>
+            <div>
+              <strong>Global Platform Statistics</strong>
+              <p>{{ userProfile?.role === 'ADMIN' ? 'Access aggregated cross-tenant user and record analytics' : 'Restricted to Administrators' }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

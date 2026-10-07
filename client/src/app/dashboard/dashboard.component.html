@@ -1,0 +1,177 @@
+<div class="dashboard-page">
+  <!-- Header / Greeting -->
+  <div class="dashboard-header">
+    <div class="welcome-section">
+      <h1 class="welcome-title">
+        Welcome back, <span class="user-highlight">{{ currentUser?.name || 'User' }}</span> 👋
+      </h1>
+      <p class="welcome-subtitle">
+        Here is what's happening with your verification records and operations today.
+      </p>
+    </div>
+    <div class="header-actions">
+      <a routerLink="/records" class="btn btn-outline">
+        <svg viewBox="0 0 20 20" fill="currentColor" class="btn-icon">
+          <path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a2 2 0 012-2h12a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4z" />
+        </svg>
+        View All Records
+      </a>
+      <a routerLink="/records" [queryParams]="{ action: 'new' }" class="btn btn-primary">
+        <svg viewBox="0 0 20 20" fill="currentColor" class="btn-icon">
+          <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
+        </svg>
+        New Record
+      </a>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <app-loading-spinner *ngIf="isLoading" [message]="loadingMessage"></app-loading-spinner>
+
+  <!-- Error State -->
+  <div *ngIf="!isLoading && error" class="error-banner">
+    <div class="error-content">
+      <svg viewBox="0 0 20 20" fill="currentColor" class="error-icon">
+        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+      </svg>
+      <span>{{ error }}</span>
+    </div>
+    <button class="btn btn-sm btn-retry" (click)="retry()">Try Again</button>
+  </div>
+
+  <!-- Content when loaded -->
+  <div *ngIf="!isLoading && !error" class="dashboard-content">
+    <!-- Stat Cards Grid -->
+    <div class="stats-grid">
+      <div class="stat-card stat-total">
+        <div class="stat-icon-wrapper">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+        </div>
+        <div class="stat-info">
+          <span class="stat-label">Total Records</span>
+          <span class="stat-value">{{ recordStats?.total ?? 0 }}</span>
+        </div>
+        <div class="stat-badge stat-badge-blue">Total logged</div>
+      </div>
+
+      <div class="stat-card stat-pending">
+        <div class="stat-icon-wrapper">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+        <div class="stat-info">
+          <span class="stat-label">Pending Review</span>
+          <span class="stat-value">{{ recordStats?.pending ?? 0 }}</span>
+        </div>
+        <div class="stat-badge stat-badge-amber">Awaiting action</div>
+      </div>
+
+      <div class="stat-card stat-verified">
+        <div class="stat-icon-wrapper">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+        <div class="stat-info">
+          <span class="stat-label">Completed</span>
+          <span class="stat-value">{{ recordStats?.completed ?? 0 }}</span>
+        </div>
+        <div class="stat-badge stat-badge-emerald">Verified & Done</div>
+      </div>
+
+      <div class="stat-card stat-rejected">
+        <div class="stat-icon-wrapper">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+        <div class="stat-info">
+          <span class="stat-label">Rejected</span>
+          <span class="stat-value">{{ recordStats?.rejected ?? 0 }}</span>
+        </div>
+        <div class="stat-badge stat-badge-rose">Declined</div>
+      </div>
+    </div>
+
+    <!-- Admin User Metrics (Visible only to ADMIN) -->
+    <div *ngIf="isAdmin && userStats" class="admin-section">
+      <div class="section-card">
+        <div class="section-header">
+          <div class="section-title-wrap">
+            <div class="title-dot"></div>
+            <h3>Platform User Metrics</h3>
+          </div>
+          <a routerLink="/admin/users" class="link-action">Manage Users &rarr;</a>
+        </div>
+        <div class="user-stats-grid">
+          <div class="user-stat-box">
+            <span class="metric-num">{{ userStats.total }}</span>
+            <span class="metric-text">Total Users</span>
+          </div>
+          <div class="user-stat-box">
+            <span class="metric-num text-success">{{ userStats.active }}</span>
+            <span class="metric-text">Active Accounts</span>
+          </div>
+          <div class="user-stat-box">
+            <span class="metric-num text-indigo">{{ userStats.admins }}</span>
+            <span class="metric-text">Admins</span>
+          </div>
+          <div class="user-stat-box">
+            <span class="metric-num text-cyan">{{ userStats.generalUsers }}</span>
+            <span class="metric-text">Standard Users</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent Records Table Preview -->
+    <div class="records-preview-section">
+      <div class="section-header">
+        <div>
+          <h2 class="section-heading">Recent Records</h2>
+          <p class="section-subheading">Latest applicant checks in the system</p>
+        </div>
+        <a routerLink="/records" class="btn btn-sm btn-ghost">View all records &rarr;</a>
+      </div>
+
+      <div class="table-container" *ngIf="recentRecords.length > 0; else emptyRecords">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Applicant / Title</th>
+              <th>Category</th>
+              <th>Status</th>
+              <th>Created</th>
+              <th class="text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let record of recentRecords">
+              <td class="font-medium text-dark">{{ record.title || 'Record #' + record.recordId }}</td>
+              <td><span class="category-pill">{{ record.category || 'General' }}</span></td>
+              <td><app-status-badge [value]="record.status"></app-status-badge></td>
+              <td class="text-muted">{{ record.createdAt | date:'mediumDate' }}</td>
+              <td class="text-right">
+                <a routerLink="/records" class="table-link">
+                  Details
+                </a>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <ng-template #emptyRecords>
+        <app-empty-state
+          title="No records found"
+          message="No verification records have been submitted yet."
+          actionText="Create First Record"
+          actionRoute="/records">
+        </app-empty-state>
+      </ng-template>
+    </div>
+  </div>
+</div>

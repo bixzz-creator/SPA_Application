@@ -1,0 +1,52 @@
+<aside class="sidebar" [class.collapsed]="isCollapsed">
+  <!-- Logo -->
+  <div class="sidebar-header">
+    <div class="sidebar-logo">
+      <div class="logo-icon">
+        <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M20 4L34 11V29L20 36L6 29V11L20 4Z" stroke="#6366f1" stroke-width="2" fill="none"/>
+          <path d="M20 11L28 15.5V24.5L20 29L12 24.5V15.5L20 11Z" fill="#6366f1" fill-opacity="0.8"/>
+        </svg>
+      </div>
+      <span class="logo-text" *ngIf="!isCollapsed">AccessHub</span>
+    </div>
+    <button class="collapse-btn" (click)="toggleCollapse()" [attr.aria-label]="isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'">
+      <span>{{ isCollapsed ? '→' : '←' }}</span>
+    </button>
+  </div>
+
+  <!-- User Info -->
+  <div class="user-info" *ngIf="!isCollapsed && currentUser">
+    <div class="user-avatar">{{ currentUser.name.charAt(0).toUpperCase() }}</div>
+    <div class="user-details">
+      <span class="user-name">{{ currentUser.name }}</span>
+      <span class="user-role-badge" [class.admin]="currentUser.role === 'ADMIN'">
+        {{ currentUser.role === 'ADMIN' ? 'Admin' : 'General User' }}
+      </span>
+    </div>
+  </div>
+
+  <!-- Navigation -->
+  <nav class="sidebar-nav">
+    <span class="nav-label" *ngIf="!isCollapsed">Navigation</span>
+    <a
+      *ngFor="let item of filteredNavItems"
+      [routerLink]="item.route"
+      class="nav-item"
+      [class.active]="isActive(item.route)"
+      [attr.title]="isCollapsed ? item.label : null"
+    >
+      <span class="nav-icon">{{ item.icon }}</span>
+      <span class="nav-text" *ngIf="!isCollapsed">{{ item.label }}</span>
+      <span class="active-indicator" *ngIf="isActive(item.route)"></span>
+    </a>
+  </nav>
+
+  <!-- Logout -->
+  <div class="sidebar-footer">
+    <button class="logout-btn" (click)="logout()" id="logout-btn">
+      <span class="nav-icon">🚪</span>
+      <span class="nav-text" *ngIf="!isCollapsed">Logout</span>
+    </button>
+  </div>
+</aside>
