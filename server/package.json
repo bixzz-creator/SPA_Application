@@ -2,10 +2,10 @@
   "name": "accesshub-server",
   "version": "1.0.0",
   "description": "AccessHub Role-Based User Management Portal - Backend API",
-  "main": "dist/app.js",
+  "main": "dist/server.js",
   "scripts": {
     "build": "tsc",
-    "start": "node dist/app.js",
+    "start": "node dist/server.js",
     "dev": "ts-node-dev --respawn --transpile-only src/app.ts",
     "seed": "ts-node src/seed/seed.ts",
     "test": "jest --forceExit --detectOpenHandles"
